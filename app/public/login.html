@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Login – Facebook Publisher</title>
+</head>
+<body style="margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f0f2f5;font-family:Arial,Helvetica,sans-serif;">
+<div style="background:#fff;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.12);padding:40px 36px;width:100%;max-width:360px;">
+  <div style="text-align:center;margin-bottom:28px;">
+    <div style="background:#1877f2;color:#fff;width:48px;height:48px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:12px;">f</div>
+    <h1 style="margin:0;font-size:20px;color:#1c1e21;">Facebook Publisher</h1>
+    <p style="margin:6px 0 0;color:#65676b;font-size:14px;">Enter your dashboard password</p>
+  </div>
+
+  <div id="error" style="display:none;background:#ffebee;color:#c62828;border-radius:6px;padding:10px 14px;font-size:14px;margin-bottom:16px;">
+    Incorrect password. Please try again.
+  </div>
+
+  <form method="POST" action="/auth/login">
+    <label style="display:block;font-size:14px;font-weight:600;color:#1c1e21;margin-bottom:6px;">Password</label>
+    <input type="password" name="password" autofocus required
+      style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #ccd0d5;border-radius:6px;font-size:15px;outline:none;" />
+    <button type="submit"
+      style="margin-top:14px;width:100%;padding:11px;background:#1877f2;color:#fff;border:none;border-radius:6px;font-size:15px;font-weight:600;cursor:pointer;">
+      Log In
+    </button>
+  </form>
+</div>
+<script>
+  if (location.search.includes('error=1')) {
+    document.getElementById('error').style.display = 'block';
+  }
+</script>
+</body>
+</html>

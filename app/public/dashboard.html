@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Dashboard – Facebook Publisher</title>
+</head>
+<body style="margin:0;background:#f0f2f5;font-family:Arial,Helvetica,sans-serif;color:#1c1e21;">
+
+<!-- HEADER -->
+<header style="background:#1877f2;color:#fff;padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:10;">
+  <div style="display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700;">
+    <span style="background:rgba(255,255,255,.2);border-radius:50%;width:32px;height:32px;display:inline-flex;align-items:center;justify-content:center;">f</span>
+    Facebook Publisher
+  </div>
+  <form method="POST" action="/auth/logout" style="margin:0;">
+    <button type="submit" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:6px;padding:7px 14px;cursor:pointer;font-size:14px;">Log out</button>
+  </form>
+</header>
+
+<div style="max-width:860px;margin:32px auto;padding:0 16px;">
+
+  <!-- STATS -->
+  <div id="stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;"></div>
+
+  <!-- NEW POST FORM -->
+  <div style="background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1);padding:24px;margin-bottom:28px;">
+    <h2 style="margin:0 0 20px;font-size:17px;">Create New Post</h2>
+
+    <div id="form-error" style="display:none;background:#ffebee;color:#c62828;border-radius:6px;padding:10px 14px;font-size:14px;margin-bottom:14px;"></div>
+    <div id="form-success" style="display:none;background:#e8f5e9;color:#2e7d32;border-radius:6px;padding:10px 14px;font-size:14px;margin-bottom:14px;"></div>
+
+    <form id="post-form" enctype="multipart/form-data">
+      <label style="display:block;font-size:14px;font-weight:600;margin-bottom:6px;">Message *</label>
+      <textarea name="message" rows="4" required placeholder="What do you want to post?"
+        style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #ccd0d5;border-radius:6px;font-size:14px;resize:vertical;"></textarea>
+
+      <div style="margin-top:16px;">
+        <label style="display:block;font-size:14px;font-weight:600;margin-bottom:8px;">Image (optional)</label>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:200px;">
+            <label style="font-size:13px;color:#65676b;display:block;margin-bottom:4px;">Upload file</label>
+            <input type="file" name="image" id="image-file" accept="image/*"
+              style="width:100%;box-sizing:border-box;font-size:13px;" />
+          </div>
+          <div style="flex:1;min-width:200px;">
+            <label style="font-size:13px;color:#65676b;display:block;margin-bottom:4px;">Or paste image URL</label>
+            <input type="url" name="imageUrl" id="image-url" placeholder="https://..."
+              style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #ccd0d5;border-radius:6px;font-size:13px;" />
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;">
+        <div style="flex:1;min-width:220px;">
+          <label style="display:block;font-size:14px;font-weight:600;margin-bottom:6px;">Schedule Date &amp; Time *</label>
+          <input type="datetime-local" name="scheduledAt" id="scheduled-at" required
+            style="width:100%;box-sizing:border-box;padding:9px 10px;border:1px solid #ccd0d5;border-radius:6px;font-size:14px;" />
+        </div>
+        <button type="button" id="btn-now" title="Set schedule to right now"
+          style="padding:9px 16px;border:1px solid #1877f2;color:#1877f2;background:#fff;border-radius:6px;font-size:13px;cursor:pointer;white-space:nowrap;">
+          Set to Now
+        </button>
+      </div>
+
+      <div style="margin-top:20px;display:flex;gap:10px;">
+        <button type="submit"
+          style="padding:10px 22px;background:#1877f2;color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;">
+          Schedule Post
+        </button>
+        <button type="reset" style="padding:10px 16px;background:#e4e6eb;color:#1c1e21;border:none;border-radius:6px;font-size:14px;cursor:pointer;">
+          Clear
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- POSTS LIST -->
+  <div style="background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1);padding:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+      <h2 style="margin:0;font-size:17px;">Posts</h2>
+      <div id="filter-tabs" style="display:flex;gap:6px;">
+        <button class="tab active" data-filter="all" style="padding:6px 14px;border-radius:20px;border:1px solid #1877f2;background:#1877f2;color:#fff;font-size:13px;cursor:pointer;">All</button>
+        <button class="tab" data-filter="pending" style="padding:6px 14px;border-radius:20px;border:1px solid #ccd0d5;background:#fff;color:#65676b;font-size:13px;cursor:pointer;">Pending</button>
+        <button class="tab" data-filter="published" style="padding:6px 14px;border-radius:20px;border:1px solid #ccd0d5;background:#fff;color:#65676b;font-size:13px;cursor:pointer;">Published</button>
+        <button class="tab" data-filter="failed" style="padding:6px 14px;border-radius:20px;border:1px solid #ccd0d5;background:#fff;color:#65676b;font-size:13px;cursor:pointer;">Failed</button>
+      </div>
+    </div>
+    <div id="posts-list"></div>
+  </div>
+
+</div>
+
+<script>
+let allPosts = [];
+let currentFilter = 'all';
+
+const STATUS_COLORS = {
+  pending:   { bg: '#fff3e0', text: '#e65100' },
+  published: { bg: '#e8f5e9', text: '#2e7d32' },
+  failed:    { bg: '#ffebee', text: '#c62828' }
+};
+
+async function loadPosts() {
+  const res = await fetch('/api/posts');
+  allPosts = await res.json();
+  renderStats();
+  renderPosts();
+}
+
+function renderStats() {
+  const counts = { total: allPosts.length, pending: 0, published: 0, failed: 0 };
+  allPosts.forEach(p => counts[p.status]++);
+  const labels = { total: 'Total', pending: 'Pending', published: 'Published', failed: 'Failed' };
+  const colors  = { total: '#1877f2', pending: '#e65100', published: '#2e7d32', failed: '#c62828' };
+  document.getElementById('stats').innerHTML = Object.entries(counts).map(([k, v]) => `
+    <div style="background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1);padding:16px 20px;border-left:4px solid ${colors[k]};">
+      <div style="font-size:26px;font-weight:700;color:${colors[k]};">${v}</div>
+      <div style="font-size:13px;color:#65676b;margin-top:2px;">${labels[k]}</div>
+    </div>`).join('');
+}
+
+function renderPosts() {
+  const filtered = currentFilter === 'all' ? allPosts : allPosts.filter(p => p.status === currentFilter);
+  if (!filtered.length) {
+    document.getElementById('posts-list').innerHTML = `<p style="color:#65676b;text-align:center;padding:32px 0;margin:0;">No posts found.</p>`;
+    return;
+  }
+  document.getElementById('posts-list').innerHTML = filtered.map(p => {
+    const sc = STATUS_COLORS[p.status] || {};
+    const scheduled = new Date(p.scheduledAt).toLocaleString();
+    const published = p.publishedAt ? new Date(p.publishedAt).toLocaleString() : null;
+    return `
+    <div style="border:1px solid #e4e6eb;border-radius:8px;padding:16px;margin-bottom:10px;">
+      <div style="display:flex;gap:8px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+            <span style="background:${sc.bg};color:${sc.text};border-radius:12px;padding:2px 10px;font-size:12px;font-weight:600;">${p.status.toUpperCase()}</span>
+            <span style="background:#e4e6eb;color:#65676b;border-radius:12px;padding:2px 10px;font-size:12px;">${p.type.toUpperCase()}</span>
+          </div>
+          <p style="margin:0 0 8px;font-size:14px;white-space:pre-wrap;word-break:break-word;">${escHtml(p.message)}</p>
+          ${p.imageUrl ? `<p style="margin:0 0 6px;font-size:12px;color:#65676b;">Image: <a href="${escHtml(p.imageUrl)}" target="_blank" style="color:#1877f2;">${escHtml(p.imageUrl)}</a></p>` : ''}
+          <p style="margin:0;font-size:12px;color:#65676b;">Scheduled: ${scheduled}</p>
+          ${published ? `<p style="margin:2px 0 0;font-size:12px;color:#65676b;">Published: ${published}</p>` : ''}
+          ${p.fbPostId ? `<p style="margin:2px 0 0;font-size:12px;color:#65676b;">FB ID: ${escHtml(p.fbPostId)}</p>` : ''}
+          ${p.error ? `<p style="margin:4px 0 0;font-size:12px;color:#c62828;">Error: ${escHtml(p.error)}</p>` : ''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+          ${p.status === 'pending' ? `
+            <button onclick="publishNow('${p.id}')"
+              style="padding:6px 12px;background:#1877f2;color:#fff;border:none;border-radius:6px;font-size:12px;cursor:pointer;white-space:nowrap;">
+              Publish Now
+            </button>
+            <button onclick="deletePost('${p.id}')"
+              style="padding:6px 12px;background:#ffebee;color:#c62828;border:none;border-radius:6px;font-size:12px;cursor:pointer;">
+              Delete
+            </button>` : ''}
+          ${p.status === 'failed' ? `
+            <button onclick="deletePost('${p.id}')"
+              style="padding:6px 12px;background:#ffebee;color:#c62828;border:none;border-radius:6px;font-size:12px;cursor:pointer;">
+              Delete
+            </button>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+async function publishNow(id) {
+  if (!confirm('Publish this post to Facebook right now?')) return;
+  const res = await fetch(`/api/posts/${id}/publish`, { method: 'POST' });
+  const data = await res.json();
+  if (!res.ok) { alert('Error: ' + data.error); }
+  loadPosts();
+}
+
+async function deletePost(id) {
+  if (!confirm('Delete this post?')) return;
+  await fetch(`/api/posts/${id}`, { method: 'DELETE' });
+  loadPosts();
+}
+
+// Filter tabs
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentFilter = btn.dataset.filter;
+    document.querySelectorAll('.tab').forEach(b => {
+      const active = b === btn;
+      b.style.background = active ? '#1877f2' : '#fff';
+      b.style.color      = active ? '#fff' : '#65676b';
+      b.style.borderColor = active ? '#1877f2' : '#ccd0d5';
+    });
+    renderPosts();
+  });
+});
+
+// "Set to Now" button
+document.getElementById('btn-now').addEventListener('click', () => {
+  const now = new Date(Date.now() + 60000); // 1 min from now
+  document.getElementById('scheduled-at').value = now.toISOString().slice(0, 16);
+});
+
+// If user picks a file, clear URL and vice-versa
+document.getElementById('image-file').addEventListener('change', () => {
+  if (document.getElementById('image-file').files.length) {
+    document.getElementById('image-url').value = '';
+  }
+});
+document.getElementById('image-url').addEventListener('input', () => {
+  if (document.getElementById('image-url').value) {
+    document.getElementById('image-file').value = '';
+  }
+});
+
+// Form submit
+document.getElementById('post-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  document.getElementById('form-error').style.display = 'none';
+  document.getElementById('form-success').style.display = 'none';
+
+  const fd = new FormData(e.target);
+  // If imageUrl is set but no file, don't include the empty file field
+  if (!fd.get('image')?.size) fd.delete('image');
+
+  const res = await fetch('/api/posts', { method: 'POST', body: fd });
+  const data = await res.json();
+
+  if (!res.ok) {
+    const el = document.getElementById('form-error');
+    el.textContent = data.error || 'Failed to schedule post.';
+    el.style.display = 'block';
+    return;
+  }
+
+  const el = document.getElementById('form-success');
+  el.textContent = 'Post scheduled successfully!';
+  el.style.display = 'block';
+  e.target.reset();
+  loadPosts();
+});
+
+// Refresh every 30 seconds so status updates auto-appear
+loadPosts();
+setInterval(loadPosts, 30000);
+</script>
+</body>
+</html>

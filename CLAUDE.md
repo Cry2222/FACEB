@@ -4,20 +4,55 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Overview
 
-This repository hosts a single static HTML privacy policy page (`index.html`) for a Facebook Graph API integration app that manages and publishes content on authorized Facebook Pages. There is no build system, framework, backend, or tooling of any kind.
+This repository contains two things:
+1. `index.html` — A static privacy policy page for a Facebook Graph API integration app.
+2. `app/` — A Node.js dashboard for scheduling and auto-publishing content to Facebook Pages via the Graph API.
 
-## Structure
+## Running the App
 
-- `index.html` — The only tracked file. A self-contained privacy policy page with inline CSS. No external dependencies, scripts, or assets.
+```bash
+cp .env.example .env      # fill in FB_PAGE_ID and FB_PAGE_ACCESS_TOKEN
+npm install
+npm start                 # http://localhost:3000
+```
 
-## Development
+Login password is set via `DASHBOARD_PASSWORD` in `.env` (default: `926696`).
 
-No build, install, or start commands are needed. Open `index.html` directly in a browser to preview it.
+## Architecture
 
-There are no tests, linters, or CI pipelines configured in this repository.
+```
+app/
+├── server.js             # Express entry point, session middleware, cron scheduler
+├── routes/
+│   ├── auth.js           # POST /auth/login, POST /auth/logout
+│   └── posts.js          # CRUD API + Facebook Graph API publishing logic
+├── data/posts.json       # Persistent post store (JSON file, auto-created)
+├── uploads/              # Temp storage for uploaded images (deleted after publishing)
+└── public/
+    ├── login.html        # Password login page
+    └── dashboard.html    # SPA dashboard (vanilla JS, no framework)
+```
+
+**Scheduling:** `node-cron` runs every minute and calls `publishPendingPosts()`, which finds all posts with `status: "pending"` whose `scheduledAt` is in the past and publishes them to Facebook.
+
+**Facebook API endpoints used:**
+- Text posts → `POST /{page-id}/feed`
+- Image posts → `POST /{page-id}/photos` (accepts file upload or `url`)
 
 ## Key Conventions
 
-- All styling is inline in the `<body>` tag. Keep it that way to maintain zero external dependencies.
-- The contact email referenced for data deletion requests is `onesetforu@gmail.com`.
-- The "Last updated" date near the top of `index.html` should be updated whenever the policy content changes.
+- All dashboard styling is inline CSS (no external stylesheets or frameworks) — consistent with `index.html`.
+- Posts are stored in `app/data/posts.json`. Do not add a database unless the volume requires it.
+- `app/uploads/` holds image files only temporarily; they are deleted immediately after a successful publish.
+- The contact email for data deletion in `index.html` is `onesetforu@gmail.com`.
+- Update the `Last updated` date in `index.html` whenever the privacy policy content changes.
+
+## Environment Variables
+
+| Variable | Purpose |
+|---|---|
+| `PORT` | Server port (default: 3000) |
+| `SESSION_SECRET` | Express session secret (change in production) |
+| `DASHBOARD_PASSWORD` | Dashboard login password |
+| `FB_PAGE_ID` | Facebook Page ID to publish to |
+| `FB_PAGE_ACCESS_TOKEN` | Long-lived Page Access Token from Meta for Developers |
